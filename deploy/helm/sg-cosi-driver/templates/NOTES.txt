@@ -1,0 +1,31 @@
+== Prerequisites ==
+
+COSI controller and CRDs must be installed before using this driver.
+If not already installed, run:
+
+  kubectl create -k 'https://github.com/kubernetes-sigs/container-object-storage-interface//?ref=v0.2.2'
+
+StorageGRID must be configured with Tenant Admin API available to Kuberntes cluster
+
+== Installed Resources ==
+
+Deployment: {{ include "sg-cosi-driver.fullname" . }} (namespace: {{ .Release.Namespace }})
+{{- if .Values.serviceAccount.create }}
+ServiceAccount: {{ include "sg-cosi-driver.serviceAccountName" . }}
+{{- end }}
+{{- if .Values.rbac.create }}
+ClusterRole: {{ include "sg-cosi-driver.fullname" . }}
+ClusterRoleBinding: {{ include "sg-cosi-driver.fullname" . }}
+{{- end }}
+{{- if .Values.bucketClass.create }}
+BucketClass: {{ include "sg-cosi-driver.bucketClassName" . }}
+{{- end }}
+{{- if .Values.bucketAccessClass.create }}
+BucketAccessClass: {{ include "sg-cosi-driver.bucketAccessClassName" . }}
+{{- end }}
+
+== Verify ==
+
+  kubectl get deployment {{ include "sg-cosi-driver.fullname" . }} -n {{ .Release.Namespace }}
+  kubectl get bucketclass
+  kubectl get bucketaccessclass

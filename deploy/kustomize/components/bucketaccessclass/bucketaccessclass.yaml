@@ -1,0 +1,13 @@
+apiVersion: objectstorage.k8s.io/v1alpha1
+kind: BucketAccessClass
+metadata:
+  name: sg-cosi-readwrite
+  labels:
+    app.kubernetes.io/name: sg-cosi-driver
+driverName: sg.cosi.scaleoutsean.github.io
+authenticationType: Key
+# parameters:
+#   tenantGroupId: "a5e9cbcb-181b-4506-9551-fb1a7c52c820" # Optional: Override global tenant group
+#   validDays: "30" # Optional: Set expiration for spawned keys in days
+# Create multiple BucketAccessClasses with different tenantGroupId values to route users to different StorageGRID Tenant Groups based on class selection in the BucketAccessRequest.
+

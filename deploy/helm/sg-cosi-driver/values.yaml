@@ -1,0 +1,90 @@
+nameOverride: ""
+fullnameOverride: ""
+
+driver:
+  # COSI driver name (required). Must be unique per driver instance (also per StorageGRID tenant).
+  name: "sg01.cosi.dev"
+  image:
+    repository: docker.io/scaleoutsean/sg-cosi-driver
+    tag: ""  # defaults to .Chart.AppVersion
+    pullPolicy: IfNotPresent
+  resources: {}
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
+
+sidecar:
+  image:
+    repository: registry.k8s.io/sig-storage/objectstorage-sidecar
+    tag: v0.2.2
+    pullPolicy: IfNotPresent
+  extraArgs: []
+  resources: {}
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: ["ALL"]
+
+imagePullSecrets: []
+
+# StorageGRID Tenant connection settings
+storagegrid:
+  s3Endpoint: "https://s3.sg.example.com:10443"
+  adminEndpoint: "https://tenant.sg.example.com:9443"
+  region: "us-east-1"
+  s3AddressingStyle: "path"
+  
+  tls:
+    insecureSkipVerify: false  # TLS check may fail if caCertMapName isn't provided
+    caCertMapName: "" # Optional ConfigMap containing 'ca.crt' to mount for StorageGRID validation
+
+  tenant:
+    accountId: ""  # Tenant's Id on Grid, not Tenant Account's Id
+    groupId: ""    # group's ID of Tenant Admin (or equivalent) group
+    credentials:
+      secretName: "sg-tenant-credentials" # Tenant Admin or equivalent
+      usernameField: "username"
+      passwordField: "password"
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+rbac:
+  create: true
+
+bucketClass:
+  create: true
+  name: ""
+  deletionPolicy: Retain # Tenant Admin should manually clean up buckets and users after deletion
+  parameters: {}
+
+bucketAccessClass:
+  create: true
+  name: ""
+  authenticationType: Key
+  # payrameters: {} 
+  payrameters:
+    # Optional override for multi-tenant group routing isolating users by T-shirt size. This is a unique group ID within a Tenant
+    # tenantGroupId: "a5e9cbcb-181b-4506-9551-fb1a7c52c820"
+    # Create multiple BucketAccessClasses with different tenantGroupId values to route users to different StorageGRID Tenant Groups based on class selection in the BucketAccessRequest.
+    # Optional expiration for StorageGRID S3 access keys in days (defaults to 0 / never).
+    validDays: "30"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+podLabels: {}

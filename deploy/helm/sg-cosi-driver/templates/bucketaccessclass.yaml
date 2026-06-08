@@ -1,0 +1,14 @@
+{{- if .Values.bucketAccessClass.create }}
+apiVersion: objectstorage.k8s.io/v1alpha1
+kind: BucketAccessClass
+metadata:
+  name: {{ include "sg-cosi-driver.bucketAccessClassName" . }}
+  labels:
+    {{- include "sg-cosi-driver.labels" . | nindent 4 }}
+driverName: {{ include "sg-cosi-driver.driverName" . }}
+authenticationType: {{ .Values.bucketAccessClass.authenticationType }}
+{{- with .Values.bucketAccessClass.parameters }}
+parameters:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
