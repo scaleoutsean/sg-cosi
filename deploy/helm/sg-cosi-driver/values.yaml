@@ -8,7 +8,13 @@ driver:
     repository: docker.io/scaleoutsean/sg-cosi-driver
     tag: ""  # defaults to .Chart.AppVersion
     pullPolicy: IfNotPresent
-  resources: {}
+  resources:
+    limits:
+      cpu: 250m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
   securityContext:
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
@@ -67,8 +73,7 @@ bucketAccessClass:
   create: true
   name: ""
   authenticationType: Key
-  # payrameters: {} 
-  payrameters:
+  parameters:
     # Optional override for multi-tenant group routing isolating users by T-shirt size. This is a unique group ID within a Tenant
     # tenantGroupId: "a5e9cbcb-181b-4506-9551-fb1a7c52c820"
     # Create multiple BucketAccessClasses with different tenantGroupId values to route users to different StorageGRID Tenant Groups based on class selection in the BucketAccessRequest.

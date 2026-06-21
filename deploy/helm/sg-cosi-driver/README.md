@@ -1,11 +1,11 @@
 # sg-cosi-driver
 
-![Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fscaleoutsean%2Fsg-cosi-driver%2Fmaster%2Fdeploy%2Fhelm%2Fsg-cosi-driver%2FChart.yaml&query=%24.version&label=Chart&color=blue)
-![AppVersion](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fscaleoutsean%2Fsg-cosi-driver%2Fmaster%2Fdeploy%2Fhelm%2Fsg-cosi-driver%2FChart.yaml&query=%24.appVersion&label=App&color=green)
+![Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fscaleoutsean%2Fsg-cosi%2Fmaster%2Fdeploy%2Fhelm%2Fsg-cosi%2FChart.yaml&query=%24.version&label=Chart&color=blue)
+![AppVersion](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fscaleoutsean%2Fsg-cosi%2Fmaster%2Fdeploy%2Fhelm%2Fsg-cosi%2FChart.yaml&query=%24.appVersion&label=App&color=green)
 
-Helm chart for the [SG COSI Driver](https://github.com/scaleoutsean/sg-cosi-driver). Deploys a [COSI](https://github.com/kubernetes-sigs/container-object-storage-interface-spec) driver that manages S3 buckets and per-app credentials on NetApp StorageGRID through Kubernetes custom resources (`Bucket`, `BucketAccess`).
+Helm chart for the [SG COSI Driver](https://github.com/scaleoutsean/sg-cosi). Deploys a [COSI](https://github.com/kubernetes-sigs/container-object-storage-interface-spec) driver that manages S3 buckets and per-app credentials on NetApp StorageGRID through Kubernetes custom resources (`Bucket`, `BucketAccess`).
 
-See the [project README](https://github.com/scaleoutsean/sg-cosi-driver) for architecture, features, and troubleshooting.
+See the [project README](https://github.com/scaleoutsean/sg-cosi) for architecture, features, requirements, and troubleshooting.
 
 ## Prerequisites
 
@@ -30,14 +30,18 @@ kubectl create secret generic sg-tenant-credentials \
 
 helm install sg-cosi-driver \
   oci://docker.io/scaleoutsean/charts/sg-cosi-driver \
-  --set driver.name=sg.cosi.scaleoutsean.github.io \
+  --set driver.name=sg.cosi.dev \
   --set storagegrid.credentials.secretName=sg-tenant-credentials
 ```
 
+Please read the README and walk-throughs from Github repo because merely running these steps is almost guaranteed to result in a non-functional deployment.
+
 ## Uninstalling the Chart
 
+Provide the correct Helm chart deployment name and namespace.
+
 ```bash
-helm uninstall sg-cosi-driver
+helm uninstall sg-cosi-driver -n <NAMESPACE>
 ```
 
 This does not delete BucketClass, BucketAccessClass, or any provisioned Bucket/BucketAccess resources. Clean those up separately if needed.
@@ -75,7 +79,7 @@ This does not delete BucketClass, BucketAccessClass, or any provisioned Bucket/B
 | `bucketClass.deletionPolicy` | string | `Delete` | Bucket deletion policy |
 | `bucketAccessClass.create` | bool | `true` | Create a default BucketAccessClass |
 | `bucketAccessClass.name` | string | `""` | BucketAccessClass name (defaults to `storagegrid`) |
-| `bucketAccessClass.authenticationType` | string | `KEY` | Authentication type |
+| `bucketAccessClass.authenticationType` | string | `Key` | Authentication type |
 | `podSecurityContext` | object | see `values.yaml` | Pod-level security context |
 | `nodeSelector` | object | `{}` | Node selector |
 | `tolerations` | list | `[]` | Tolerations |
