@@ -7,7 +7,7 @@
 - "Static": use *existing* regular bucket. 
 - "Dynamic": create/delete *read-only, snapshot* buckets (not *read-write* snapshot buckets) - see the screenshots and a demo [here](https://scaleoutsean.github.io/2026/06/13/storagegrid-sg-cosi-branch-snapshots.html)
 
-| Features | StorageGRID | Comment
+| Features | `sg-cosi` | Comment
 | :---     | ----        | :--- | 
 | Auto Bucket Access Granting | yes | Creates ephemeral tenant account and S3 key-set. Stores keys in Kubernetes namespace. |
 | Auto Bucket Access Revoking | yes | Deletes credentials in Kubernetes, removes ephemeral COSI tenant account(s) on StorageGRID. |
@@ -76,7 +76,7 @@ kubectl create namespace sg-cosi-coke
 kubectl create secret generic sg-tenant-credentials \
   --from-literal=username="YOUR_TENANT_USERNAME" \
   --from-literal=password="YOUR_TENANT_PASSWORD" \
-  -n sg-cosi-coke # using default is recommended 
+  -n sg-cosi-coke # always store credentials in the Tenant's namespace
 
 #  ^^^^^ if you have tenants "coke", "pepsi":
 # - name credentials differently: sg-coke-tenant-credentials, sg-pepsi-tenant-credentials
@@ -317,6 +317,8 @@ This COSI driver uses Tenant Admin (or equivalent, for the purpose of Bucket and
 If current Bearer Token gets deleted before it naturally expires - restart the COSI driver to get a new one. Without that, it may remain effectively offline until end of its refresh cycle (12 hours).
 
 ## Security considerations
+
+How you manage tenants is up to you, but having dedicated COSI-only tenants seems like the only reasonable approach to me. If I had Coke and Pepsi as tenants who needed COSI, I'd create new tenants (cosi-coke, cosi-pepsi) for COSI use.
 
 - In StorageGRID bucket ACLs, it is recommended to restrict access by IP address:
 ```json
