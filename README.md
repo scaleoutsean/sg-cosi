@@ -32,7 +32,7 @@ COSI drivers can talk to StorageGRID over two endpoints. `sg-cosi` currently sup
 
 | Endpoint | Required | Note |
 | ---------| :---:    | :----|
-| SG Tenant Mgmt (TCP/9443) | **Y** | Control Flow ; required for access management |
+| SG Tenant Mgmt (TCP/9443 or TCP/443) | **Y** | Control Flow ; required for access management |
 | S3 API (TCP/10443) | N | Data Flow; `sg-cosi` doesn't support regular bucket create/delete, so it doesn't use this endpoint |
 
 The S3 **users** in the Kubernetes namespace served by `sg-cosi` driver still need access to S3 API endpoints.
