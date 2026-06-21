@@ -11,10 +11,10 @@
 | :---     | ----        | :--- | 
 | Auto Bucket Access Granting | yes | Creates ephemeral tenant account and S3 key-set. Stores keys in Kubernetes namespace. |
 | Auto Bucket Access Revoking | yes | Deletes credentials in Kubernetes, removes ephemeral COSI tenant account(s) on StorageGRID. |
-| Dynamic Bucket Lifecycle | limited| This works with read-only snapshot buckets only. |
-| Static Bucket Lifecycle | limited | This helps claim existing buckets in Kubernetes. Reclaim Policy is Retain. |
+| Dynamic Bucket Lifecycle | limited| This is supported with read-only snapshot buckets only. |
+| Static Bucket Lifecycle | limited | This helps claim existing buckets in Kubernetes. Supported Reclaim Policy Retain. |
 
-Complete and unrestricted bucket lifecycle doesn't require additional development, but it's not supported because [COSI v1alpha1 is garbage](https://scaleoutsean.github.io/2026/06/07/cosi-v1alpha1-is-garbage.html) and `sg-cosi` implements what's in author's opinion reasonably safe and useful for StorageGRID, rather than what is possible.
+Complete and unrestricted bucket lifecycle doesn't require additional development, but it's not supported because [COSI v1alpha1 is garbage](https://scaleoutsean.github.io/2026/06/07/cosi-v1alpha1-is-garbage.html) and `sg-cosi` implements what's in author's opinion reasonably safe and useful for StorageGRID, rather than what is possible in COSI.
 
 Because dynamic bucket lifecycle for new regular buckets is not enabled, Tenant Admin (or equivalent) is required to create regular buckets *before* COSI can use them. After they're removed from COSI, they continue to be managed by Tenant Admin(s).
 

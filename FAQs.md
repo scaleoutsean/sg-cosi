@@ -26,9 +26,9 @@ kubectl patch bucketaccess my-coke-access -n sg-cosi-coke --type json -p '[{"op"
 
 ### Which COSI `bc-` maps to which `ba-` user on SG?
 
-Since StorageGRID 12.0 won't show you user IDs in the Web UI, you need to find it yourself (use the API, etc.). "Contact your NetApp representative."
+Since StorageGRID 12.0 won't show you user IDs in the Web UI (you may be able see it in URLs while you use Tenant Web UI), you need to find it yourself (use the API, etc.).
 
-This COSI Driver logs stuff when there's something going on.
+This COSI Driver logs stuff when there's something going on, so collect those logs if you want to get this information from the driver.
 
 ```raw
 I0618 11:42:15.123456       1 provisioner.go:138] "Successfully granted bucket access" 
