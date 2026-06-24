@@ -164,9 +164,9 @@ Please follow the instructions for two tested workflows in [examples/README](./e
 
 ### Multi-Tenant Group Overrides & Credential Expiration
 
-K8s COSI provisions Service Accounts mapped dynamically into the Tenant Group specified globally via `TENANT_GROUP_ID`.
+K8s COSI provisions Service Accounts mapped dynamically into the Tenant Group specified globally via `TENANT_GROUP_ID` in your Helm configuration.
 
-To enable Multi-Group routing (e.g. creating isolation bounds for distinct `readOnly` vs `readWrite` S3 Policies you construct manually on StorageGRID endpoints), you can optionally **override** the global fallback logic on individual BucketAccessClasses directly within an opaque `parameters` payload.
+To enable Multi-Group routing (e.g. creating isolation bounds for distinct `readOnly` vs `readWrite` S3 Policies you construct manually on StorageGRID endpoints), you can optionally **override** the global fallback logic on individual BucketAccessClasses directly within an opaque `parameters` payload. If the `tenantGroupId` parameter is omitted from the `BucketAccessClass`, the driver seamlessly falls back to the globally defined Tenant Group ID injected by Helm.
 
 Additionally, to mitigate the risk of orchestrated K8s cluster teardowns failing to invoke COSI cleanup routines (leaving orphaned credentials with "no expiration" on the StorageGRID tenant), administrators can inject an optional `validDays` integer parameter to defensively apply a hard TTL limit for any S3 key spawned by that Class:
 
