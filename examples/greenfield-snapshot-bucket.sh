@@ -58,17 +58,17 @@ kind: BucketAccessClass
 metadata:
   # Using a unique name for this example to showcase Multi-Tenant Group routing
   # without conflicting with the 'sg-cosi-coke-readonly' class created by Helm!
-  name: sg-cosi-coke-snapshot-readonly
+  name: sg-cosi-coke-reporting
 driverName: coke.sg.cosi.dev
 authenticationType: Key
 parameters:
   # Optional: Override the Helm default TenantGroupId to isolate snapshot users
-  # tenantGroupId: "a5e9cbcb-181b-4506-9551-fb1a7c52c820"
+  # tenantGroupId: "c3d52e90-7c7d-422b-9836-357fb88ab26b"
   validDays: "1"
 EOF
 
 # Show BucketAccessClass status
-kubectl get bucketaccessclass sg-cosi-coke-snapshot-readonly -o yaml | grep -A 5 status
+kubectl get bucketaccessclass sg-cosi-coke-reporting -o yaml | grep -A 5 status
 # Prompt to press ENTER when ready to request access keys
 read -p "Press ENTER to request access keys for the snapshot claim..."
 
@@ -82,7 +82,7 @@ metadata:
 spec:
   bucketClaimName: my-snapshot-claim
   # Important: The Access class must match the ReadOnly expectations to enforce defense-in-depth
-  bucketAccessClassName: sg-cosi-coke-snapshot-readonly 
+  bucketAccessClassName: sg-cosi-coke-reporting
   credentialsSecretName: my-snapshot-credentials
   protocol: s3
 EOF
@@ -91,6 +91,6 @@ EOF
 sleep 1
 echo "You can verify the bucket access status before proceeding:"
 kubectl get bucketaccess -n sg-cosi-coke -o yaml | grep -A 5 status
-echo "Press ENTER to view the credentials in the Secret..."
+echo "Press ENTER to view the credentials in the Secret. If you see an empty secret, wait up to 90s and try again."
 read -p ""
 kubectl get secret my-snapshot-credentials -n sg-cosi-coke -o yaml

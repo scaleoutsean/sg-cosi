@@ -38,12 +38,12 @@ kind: BucketAccessClass
 metadata:
   # Using a unique name for this example to showcase Multi-Tenant Group routing
   # without conflicting with the 'sg-cosi-coke-readonly' class created by Helm!
-  name: sg-cosi-coke-snapshot-readonly
+  name: sg-cosi-coke-reporting
 driverName: coke.sg.cosi.dev
 authenticationType: Key
 parameters:
   # Optional: Override the Helm default TenantGroupId to isolate snapshot users
-  # tenantGroupId: "a5e9cbcb-181b-4506-9551-fb1a7c52c820"
+  # tenantGroupId: "c3d52e90-7c7d-422b-9836-357fb88ab26b"
   validDays: "1"
 
 ---
@@ -56,6 +56,6 @@ metadata:
 spec:
   bucketClaimName: my-snapshot-claim
   # Important: The Access class must match the ReadOnly expectations to enforce defense-in-depth
-  bucketAccessClassName: sg-cosi-coke-readonly 
+  bucketAccessClassName: sg-cosi-coke-reporting
   credentialsSecretName: my-snapshot-credentials
   protocol: s3

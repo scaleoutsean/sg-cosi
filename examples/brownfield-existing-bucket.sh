@@ -74,6 +74,9 @@ read -p ""
 
 # ---
 # 3. Developer requests access keys for their claimed bucket
+# Admin must have created a BucketAccessClass that matches the BucketClass used in the claim above (done in Helm chart)
+# Additional user groups may be created by the Tenant Administrator and (and bucketAccessClass-es in Kubernetes) to provide different access levels (e.g., read-only, read-write, etc.)
+
 cat <<EOF | kubectl apply -f -
 apiVersion: objectstorage.k8s.io/v1alpha1
 kind: BucketAccess

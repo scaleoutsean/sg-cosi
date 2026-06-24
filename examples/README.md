@@ -51,7 +51,7 @@ After the script finishes, edit `./examples/pod-s3-mount-example.yaml` for your 
 - `BUCKET=` (to use the random new regular bucket name)
 - `secretName` (to use `dynamic-s3-credentials`)
 
-Apply this pod to test access to that bucket. Aside from the random bucket name and a different secretName used, this is not different from COSI Browfield workflow.
+Apply this pod to test access to that bucket. Aside from the random bucket name and a different secretName used, this is not different from COSI Brownfield workflow.
 
 ## Greenfield workflow with new read-only snapshot bucket
 
@@ -86,33 +86,26 @@ Clean up:
 ```sh
 kubectl delete -f ./examples/pod-s3-mount-example.yaml
 kubectl delete -f ./examples/greenfield-snapshot-bucket.yaml 
-# kubectl delete BucketAccess my-snapshot-access -n sg-cosi-coke
-# kubectl delete BucketAccessClass sg-cosi-coke-readonly
-# kubectl delete BucketClaim my-snapshot-access -n sg-cosi-coke
-# kubectl delete BucketClass sg-cosi-coke-default
 ```
 
 ## Refine access within a bucket
 
 COSI doesn't create or modify bucket ACLs, it only uses `bucketAccessClass`es it's given to work with. See `values.yaml` in Helm chart.
 
-You may create different user groups in the StorageGRID tenant account and then different `bucketAccessClass` to make use of them.
+You may create different user groups in the StorageGRID Tenant and specify a different `tenantGroupId` in `bucketAccessClass` that appears in these examples (there's a placeholder in read-only snapshot example) to make use of it.
 
 ## Clean-up `sg-cosi`
 
-If you want to clean up more than just the examples:
+If you want to clean up more than just the examples, delete everything. Note that orderly deletion may be slow (as in: minutes).
 
 ```sh
-# Tenant Admin secret 
-kubectl get secret -n sg-cosi-coke
 # S3 test pod, in case it's running
 kubectl delete -f ./examples/pod-s3-mount-example.yaml
 # Secrets created by three examples
-kubectl delete secret sg-tenant-credentials -n sg-cosi-coke
 kubectl delete secret coke-s3-analytics-bucket-credentials  -n sg-cosi-coke
 kubectl delete secret dynamic-s3-credentials -n sg-cosi-coke
 # BucketAccessClass
-kubectl delete BucketAccessClass sg-cosi-coke-readonly
+kubectl delete BucketAccessClass sg-cosi-coke-snapshot-readonly
 # BucketClaim
 kubectl delete BucketClaim analytics-bucket-claim -n sg-cosi-coke
 kubectl delete BucketClaim my-greenfield-claim  -n sg-cosi-coke
@@ -125,4 +118,7 @@ kubectl delete BucketClass sg-ro-snapshot-class
 helm uninstall sg-cosi-coke -n sg-cosi-coke
 # Namespace 
 kubectl delete ns sg-cosi-coke 
+# Tenant Admin secret may be removed since COSI is gone
+kubectl get secret -n sg-cosi-coke
+kubectl delete secret sg-tenant-credentials -n sg-cosi-coke
 ```
