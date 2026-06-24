@@ -2,21 +2,21 @@
 
 ## What it is and what it does
 
-`sg-cosi` is an opinionated COSI driver with a deliberately limited scope. It supports only two kinds of StorageGRID buckets:
+`sg-cosi` is an opinionated COSI driver with a deliberately limited scope. It works with only two kinds of StorageGRID buckets:
 
-- "Static": use *existing* regular bucket. 
-- "Dynamic": create/delete *read-only, snapshot* buckets (not *read-write* snapshot buckets) - see the screenshots and a demo [here](https://scaleoutsean.github.io/2026/06/13/storagegrid-sg-cosi-branch-snapshots.html)
+- "Static" workflow: uses *existing* regular bucket. This is like creating static PVC (from existing PV).
+- "Dynamic" workflow: create/delete *read-only, snapshot* buckets (not *read-write* snapshot buckets) - see some screenshots and a demo [here](https://scaleoutsean.github.io/2026/06/13/storagegrid-sg-cosi-branch-snapshots.html).
 
 | Features | `sg-cosi` | Comment
 | :---     | ----        | :--- | 
 | Auto Bucket Access Granting | yes | Creates ephemeral tenant account and S3 key-set. Stores keys in Kubernetes namespace. |
 | Auto Bucket Access Revoking | yes | Deletes credentials in Kubernetes, removes ephemeral COSI tenant account(s) on StorageGRID. |
-| Dynamic Bucket Lifecycle | limited| This is supported with read-only snapshot buckets only. |
-| Static Bucket Lifecycle | limited | This helps claim existing buckets in Kubernetes. Supported Reclaim Policy Retain. |
+| Dynamic Bucket Lifecycle | yes (limited)| This is supported only with read-only snapshot buckets. Use case: reporting, analytics. |
+| Static Bucket Lifecycle | yes (limited) | This helps COSI users claim existing buckets in Kubernetes. Supported Reclaim Policy: `Retain`. |
 
-Complete and unrestricted bucket lifecycle doesn't require additional development, but it's not supported because [COSI v1alpha1 is garbage](https://scaleoutsean.github.io/2026/06/07/cosi-v1alpha1-is-garbage.html) and `sg-cosi` implements what's in author's opinion reasonably safe and useful for StorageGRID, rather than what is possible in COSI.
+Complete and unrestricted bucket lifecycle doesn't require additional development, but it's not supported because [COSI v1alpha1 is garbage](https://scaleoutsean.github.io/2026/06/07/cosi-v1alpha1-is-garbage.html) and `sg-cosi` implements what's in the author's opinion reasonably safe and useful for StorageGRID rather than what is possible in COSI.
 
-Because dynamic bucket lifecycle for new regular buckets is not enabled, Tenant Admin (or equivalent) is required to create regular buckets *before* COSI can use them. After they're removed from COSI, they continue to be managed by Tenant Admin(s).
+Because dynamic bucket lifecycle for new regular buckets is not enabled, Tenant Admin (or equivalent) is required to create regular buckets *before* COSI can use them. After they're released from COSI, they continue to be managed by Tenant Admin(s).
 
 | Who | Where | What |
 | --- | ----- | ---- |
@@ -84,7 +84,7 @@ kubectl create secret generic sg-tenant-credentials \
 
 ```
 
-Next, copy `./deploy/helm/sg-cosi-driver/values.yaml` to `my-values.yaml` to specify your StorageGRID connection endpoints and Tenant ID:
+Next, copy `./deploy/helm/sg-cosi-driver/values.yaml` to `my-values.yaml` to specify your StorageGRID connection endpoints, Tenant ID and "default" user group for :
 
 ```yaml
 driver:
@@ -106,6 +106,11 @@ bucketClass:
   name: "sg-cosi-coke-default" # Must be unique across the cluster if mapping multiple tenants
 bucketAccessClass:
   name: "sg-cosi-coke-readonly" # Must be unique across the cluster if mapping multiple tenants
+  parameters:
+    # This is a unique group ID within a Tenant for bucketAccessClass if you don't want to use Tenant Admin's group ID
+    # tenantGroupId: "a5e9cbcb-181b-4506-9551-fb1a7c52c820"  
+    # Default expiration is 0 (never). If you want these to expire, set to a positive integer even if you use Tenant Admin's group ID
+    validDays: "7"
 ```
 
 This is the key step as far as making mistakes is concerned, so be careful.

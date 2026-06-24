@@ -1,8 +1,8 @@
 # `sg-cosi` examples
 
-Two recommended and tested scenarios include:
-- Work with "static" existing bucket - this example uses Bash because we have to patch 
-- Create and delete read-only snapshot bucket - this example is a YAML manifest
+The two recommended and tested scenarios include:
+- Partial bucket lifecycle and credentials vending for "static" existing buckets - this example uses Bash because we have to patch 
+- Full bucket lifecycle (create and delete) for read-only snapshot buckets - this example can be applied as a YAML manifest
 
 Assuming you've deployed `sg-cosi` as per the main README and got the details right, you can try either or both of these.
 
@@ -38,20 +38,21 @@ Clean-up:
 kubectl delete -f ./examples/pod-s3-mount-example.yaml
 kubectl delete bucketAccess coke-analytics-access -n sg-cosi-coke
 kubectl delete BucketClaim analytics-bucket-claim -n sg-cosi-coke
-kubectl delete BucketAccessClass sg-cosi-coke-readonly
 ```
 
-StorageGRID Tenant admin's credentials (`sg-tenant-credentials` - see with: `kubectl get secret -n sg-cosi-coke`) remain as they were created when installing COSI for this namespace.
+StorageGRID Tenant admin's credentials (`sg-tenant-credentials`, check with: `kubectl get secret -n sg-cosi-coke`) remain as they were created when installing COSI into this namespace.
 
 ### New regular bucket
 
-`sg-cosi` doesn't enable COSI Greenfield workflow for new regular buckets. A way to run something that resembles it is:  `./examples/greenfield-dynamic-bucket.sh`. This creates a new Bucket but only on Kubernetes, and then you can create that bucket on StorageGRID and continue the same way this Brownfield workflow for existing buckets works. 
+`sg-cosi` doesn't enable COSI Greenfield workflow for new *regular* buckets.
+
+A way to run something that resembles it is:  `./examples/greenfield-dynamic-bucket.sh`. This creates a new Bucket but only on Kubernetes, and then you can create that bucket on StorageGRID and continue the same way this Brownfield workflow for existing buckets works. 
 
 After the script finishes, edit `./examples/pod-s3-mount-example.yaml` for your read-only snapshot bucket. Change:
 - `BUCKET=` (to use the random new regular bucket name)
 - `secretName` (to use `dynamic-s3-credentials`)
 
-Apply this pod to test access to that bucket. Aside from the random bucket name and a different secretName used, this is not different from COSI Brownfield workflow.
+Apply this pod to test access to that bucket. Aside from the random bucket name and a different secretName used, this is not different from normal COSI Brownfield workflow.
 
 ## Greenfield workflow with new read-only snapshot bucket
 
