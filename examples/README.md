@@ -99,26 +99,29 @@ You may create different user groups in the StorageGRID Tenant and specify a dif
 If you want to clean up more than just the examples, delete everything. Note that orderly deletion may be slow (as in: minutes).
 
 ```sh
-# S3 test pod, in case it's running
-kubectl delete -f ./examples/pod-s3-mount-example.yaml
-# Secrets created by three examples
-kubectl delete secret coke-s3-analytics-bucket-credentials  -n sg-cosi-coke
-kubectl delete secret dynamic-s3-credentials -n sg-cosi-coke
-# BucketAccessClass
+# Delete Pods mounting the S3 keys
+kubectl delete pod s3-test-app -n sg-cosi-coke
+# Delete BucketAccess objects (This triggers the driver to successfully delete users off StorageGRID)
+kubectl delete bucketaccessclass sg-cosi-coke-reporting 
+kubectl delete bucketaccess coke-analytics-access -n sg-cosi-coke
+kubectl delete bucketaccess my-greenfield-access -n sg-cosi-coke
+kubectl delete bucketaccess my-snapshot-access -n sg-cosi-coke
+# Delete BucketClaim objects
+kubectl delete bucketclaim analytics-bucket-claim -n sg-cosi-coke
+kubectl delete bucketclaim my-greenfield-claim -n sg-cosi-coke
+kubectl delete bucketclaim my-snapshot-claim -n sg-cosi-coke
+# Delete Bucket objects
+kubectl delete bucketaccessclass sg-cosi-coke-default 
+kubectl delete bucketaccessclass sg-regular-class
+# Delete isolated BucketAccessClass / BucketClass objects (from examples, not "global" from the Helm chart)
 kubectl delete BucketAccessClass sg-cosi-coke-snapshot-readonly
-# BucketClaim
-kubectl delete BucketClaim analytics-bucket-claim -n sg-cosi-coke
-kubectl delete BucketClaim my-greenfield-claim  -n sg-cosi-coke
-kubectl delete BucketClaim my-snapshot-claim -n sg-cosi-coke
-# BucketClass 
-kubectl delete BucketClass sg-cosi-coke-default
-kubectl delete BucketClass sg-regular-class
-kubectl delete BucketClass sg-ro-snapshot-class 
-# Helm uninstall 
+kubectl delete bucketclass sg-cosi-coke-default
+kubectl delete bucketclass sg-regular-class
+kubectl delete bucketclass sg-ro-snapshot-class
+# Uninstall the Driver Chart (will also remove BucketAccessClass from Helm chart, sg-cosi-coke-readonly)
 helm uninstall sg-cosi-coke -n sg-cosi-coke
-# Namespace 
-kubectl delete ns sg-cosi-coke 
-# Tenant Admin secret may be removed since COSI is gone
-kubectl get secret -n sg-cosi-coke
+# Uninstall the Tenant credentials 
 kubectl delete secret sg-tenant-credentials -n sg-cosi-coke
+# Remove the namespace 
+kubectl delete ns sg-cosi-coke 
 ```

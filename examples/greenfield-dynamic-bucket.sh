@@ -8,6 +8,9 @@
 # To enable this, you might specify a BucketClass with parameters:
 #   bucketType: "regular"
 
+
+# NOTE: If you enable Object Lock on a bucket, Tenant Admin may need a long time to delete the bucket after the claim is deleted.
+
 # 1. Cluster Administrator defines a generic BucketClass
 cat <<EOF | kubectl apply -f -
 apiVersion: objectstorage.k8s.io/v1alpha1
