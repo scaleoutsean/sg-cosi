@@ -69,7 +69,7 @@ sleep 90
 kubectl get secret my-snapshot-credentials -n sg-cosi-coke -o jsonpath='{.data.BucketInfo}' | base64 -d | jq
 ```
 
-Edit `./examples/pod-s3-mount-example.yaml` for your read-only snapshot bucket. Change the two lines with:
+Edit `./examples/pod-s3-mount-example.yaml` for your read-only snapshot bucket. Change values in the two lines with:
 - `BUCKET=`
 - `secretName`
 
@@ -92,6 +92,12 @@ kubectl delete -f ./examples/greenfield-snapshot-bucket.yaml
 # kubectl delete BucketClass sg-cosi-coke-default
 ```
 
+## Refine access within a bucket
+
+COSI doesn't create or modify bucket ACLs, it only uses `bucketAccessClass`es it's given to work with. See `values.yaml` in Helm chart.
+
+You may create different user groups in the StorageGRID tenant account and then different `bucketAccessClass` to make use of them.
+
 ## Clean-up `sg-cosi`
 
 If you want to clean up more than just the examples:
@@ -99,6 +105,8 @@ If you want to clean up more than just the examples:
 ```sh
 # Tenant Admin secret 
 kubectl get secret -n sg-cosi-coke
+# S3 test pod, in case it's running
+kubectl delete -f ./examples/pod-s3-mount-example.yaml
 # Secrets created by three examples
 kubectl delete secret sg-tenant-credentials -n sg-cosi-coke
 kubectl delete secret coke-s3-analytics-bucket-credentials  -n sg-cosi-coke

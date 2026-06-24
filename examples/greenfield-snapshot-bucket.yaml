@@ -36,10 +36,14 @@ spec:
 apiVersion: objectstorage.k8s.io/v1alpha1
 kind: BucketAccessClass
 metadata:
-  name: sg-cosi-coke-readonly
+  # Using a unique name for this example to showcase Multi-Tenant Group routing
+  # without conflicting with the 'sg-cosi-coke-readonly' class created by Helm!
+  name: sg-cosi-coke-snapshot-readonly
 driverName: coke.sg.cosi.dev
 authenticationType: Key
 parameters:
+  # Optional: Override the Helm default TenantGroupId to isolate snapshot users
+  # tenantGroupId: "a5e9cbcb-181b-4506-9551-fb1a7c52c820"
   validDays: "1"
 
 ---

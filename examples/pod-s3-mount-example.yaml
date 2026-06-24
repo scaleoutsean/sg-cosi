@@ -1,0 +1,64 @@
+# DEMONSTRATION: Consuming the dynamically generated COSI bucket payload
+# 
+# One of the most powerful paradigms of Kubernetes COSI is that your application
+# dynamically receives *all* necessary connection data injected directly into it,
+# meaning developers no longer need to hardcode endpoints, bucket names, regions, etc.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: s3-test-app
+  namespace: sg-cosi-coke
+spec:
+  containers:
+    - name: app
+      image: amazon/aws-cli:latest
+      # COSI injects a JSON file named `BucketInfo` into the mounted secret directory.
+      # You can use basic tools to parse that file dynamically on container boot
+      # and configure your environment without hardcoded strings!
+      command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Initializing S3 alias using COSI credentials..."
+          
+          # 1. Parse the COSI BucketInfo JSON blob
+          ENDPOINT=$(cat /var/lib/cosi-data/BucketInfo | grep -o '"endpoint":"[^"]*' | cut -d'"' -f4)
+          
+          # Since COSI v1alpha1 injects the global K8s Bucket name instead of the physical backend bucket,
+          # developers claiming brownfield buckets might need to statically extract/map the backend name.
+          # If your K8s Bucket 'name:' was exactly 'sg-brownfield-coke-analytics-bucket', that is what 
+          # COSI pushed to the Secret. In a real app, you would pass the StorageGRID target bucket name 
+          # via a standard Kubernetes ConfigMap/EnvVar instead of relying on the COSI Secret's 'bucketName' key!
+
+          BUCKET="analytics" 
+          
+          # BUCKET="sg-regular-classe3c0e2d3-f583-481b-b543-377f52013b8b"     # greenfield regular bucket may look like this
+          # BUCKET="sg-ro-snapshot-class24b8cfd3-32cb-4210-82d8-8d40f421b018" # greenfield read-only snapshot may look like this
+          
+          ACCESS_KEY=$(cat /var/lib/cosi-data/BucketInfo | grep -o '"accessKeyID":"[^"]*' | cut -d'"' -f4)
+          SECRET_KEY=$(cat /var/lib/cosi-data/BucketInfo | grep -o '"accessSecretKey":"[^"]*' | cut -d'"' -f4)
+          
+          # 2. Configure the S3 client using the dynamic variables
+          export AWS_ACCESS_KEY_ID=${ACCESS_KEY}
+          export AWS_SECRET_ACCESS_KEY=${SECRET_KEY}
+          
+          # 3. Test listing and uploading objects to the generated bucket!
+          echo "Listing contents of bucket: ${BUCKET}"
+          aws s3 ls s3://${BUCKET} --endpoint-url ${ENDPOINT} --no-verify-ssl
+          
+          echo "Test App Running! Sleeping..."
+          sleep 3600
+
+      volumeMounts:
+        - name: cosi-secrets
+          mountPath: /var/lib/cosi-data
+          readOnly: true
+          
+  volumes:
+    # 4. Mount the dynamically generated Secret referenced in your `BucketAccess`
+    - name: cosi-secrets
+      secret:
+        secretName: coke-s3-analytics-bucket-credentials # for brownfield regular bucket example 
+        # secretName: my-snapshot-credentials # for greenfield snapshot example
+        # secretName: dynamic-s3-credentials  # for greenfield regular bucket example 
