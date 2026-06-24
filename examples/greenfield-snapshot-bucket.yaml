@@ -1,0 +1,57 @@
+# GREENFIELD SNAPSHOT EXAMPLE
+# This example provisions an ephemeral, read-only clone (snapshot) of an existing
+# StorageGRID bucket dynamically via Kubernetes COSI.
+# Because the snapshot is read-only, it resists data modification and is safely 
+# disposable upon deletion of the BucketClaim.
+
+---
+# 1. Cluster Administrator defines a specialized BucketClass for Snapshots
+apiVersion: objectstorage.k8s.io/v1alpha1
+kind: BucketClass
+metadata:
+  name: sg-ro-snapshot-class
+driverName: coke.sg.cosi.dev
+deletionPolicy: Delete
+parameters:
+  bucketType: "snapshot"
+  accessLevel: "readOnly"
+  sourceBucket: "prod-ml-training-dataset" # The name of the existing StorageGRID bucket to clone
+  # beforeTime: "2026-06-12T07:59:00.000Z" # Optional: Issue a Point-In-Time (PIT) clone at this exact ISO8601 UTC timestamp. Omit for real-time.
+
+---
+# 2. Developer dynamically requests a snapshot of the source bucket
+apiVersion: objectstorage.k8s.io/v1alpha1
+kind: BucketClaim
+metadata:
+  name: my-snapshot-claim
+  namespace: sg-cosi-coke 
+spec:
+  bucketClassName: sg-ro-snapshot-class
+  protocols:
+    - s3
+  # No existingBucketName is provided, triggering Greenfield mode.
+
+---
+# 3. Cluster Administrator defines a strictly tailored BucketAccessClass to issue access keys
+apiVersion: objectstorage.k8s.io/v1alpha1
+kind: BucketAccessClass
+metadata:
+  name: sg-cosi-coke-readonly
+driverName: coke.sg.cosi.dev
+authenticationType: Key
+parameters:
+  validDays: "1"
+
+---
+# 4. Developer requests access keys for their snapshot partition
+apiVersion: objectstorage.k8s.io/v1alpha1
+kind: BucketAccess
+metadata:
+  name: my-snapshot-access
+  namespace: sg-cosi-coke # change to namespace where COSI driver is used
+spec:
+  bucketClaimName: my-snapshot-claim
+  # Important: The Access class must match the ReadOnly expectations to enforce defense-in-depth
+  bucketAccessClassName: sg-cosi-coke-readonly 
+  credentialsSecretName: my-snapshot-credentials
+  protocol: s3

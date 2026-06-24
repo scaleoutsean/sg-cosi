@@ -79,7 +79,7 @@ kubectl create secret generic sg-tenant-credentials \
   -n sg-cosi-coke # always store credentials in the Tenant's namespace
 
 #  ^^^^^ if you have tenants "coke", "pepsi":
-# - name credentials differently: sg-coke-tenant-credentials, sg-pepsi-tenant-credentials
+# - name credentials differently for sanity: sg-coke-tenant-credentials, sg-pepsi-tenant-credentials
 # - create each in its own namespace; don't put Pepsi tenant admin's secret inside of the sg-cosi-coke namespace!!!
 
 ```
@@ -151,12 +151,11 @@ Because Kubernetes COSI `v1alpha1` employs a strictly decoupled architectural mo
 1. The **Cluster Administrator** creates a global `Bucket` resource mapping strictly to the backend `existingBucketID` and patches it as Ready.
 2. The **Developer** creates a `BucketClaim` that targets the newly created global `Bucket` via `existingBucketName`.
 
-> **Note:** Directly creating a `BucketClaim` without `existingBucketName` will incorrectly trigger COSI's *Greenfield* (dynamic provisioning) logic, resulting in randomly generated Bucket UUIDs on COSI side.
+> **Note:** Directly creating a `BucketClaim` without `existingBucketName` will incorrectly trigger COSI's *Greenfield* (dynamic provisioning) logic, resulting in randomly generated Bucket UUIDs on COSI side. See [examples/README](./examples/README.md) for more.
 
 Instead of embedding incomplete snippets here, there's a fully documented, canonical, end-to-end blueprint for mapping existing buckets that's based on the installation steps above to minimize mistakes. You still need your Tenant ID and group IDs used to host ephemeral accounts (used for credentials vending).
 
-Please follow the instructions in:
-[`./examples/brownfield-existing-bucket.sh`](./examples/brownfield-existing-bucket.sh)
+Please follow the instructions for two tested workflows in [examples/README](./examples/README.md).
 
 ### Multi-Tenant Group Overrides & Credential Expiration
 
@@ -222,6 +221,8 @@ $ kubectl get secret coke-s3-analytics-bucket-credentials -n sg-cosi-coke -o jso
 ```
 
 Your app can mount this Secret and talk to StorageGRID directly. `ba-` stands for bucket access.
+
+**NOTE:** unless the you used your existing bucket in `bucketName`, you won't be able to look up its name. While you may use your existing bucket name as a matter of best practice, the assumption falls apart if you use two object stores from a namespace and there's bucket name collision or when any other user in the cluster has the same `bucketName` (`data`, anyone?). Cluster-level `Bucket` object is where you can look up the actual bucket name on StorageGRID.
 
 ### 5. Uninstall
 
@@ -345,7 +346,10 @@ Check that the COSI controller is running (`kubectl get pods -n <NAMESPACE> | gr
 Make sure the admin credentials Secret exists with valid keys, and that the admin account has permission to create users and set bucket policies.
 
 **What's COSI sidecar doing?**
-`kubectl logs deploy/<DEPLOYMENT_NAME> -c sidecar -n <NAMESPACE> --tail=30`
+```
+kubectl get deploy -n <NAMESPACE>
+kubectl logs deploy/<DEPLOYMENT_NAME> -c sidecar -n <NAMESPACE> --tail=30
+```
 
 **What COSI resources are there**
 ```sh

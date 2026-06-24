@@ -14,20 +14,17 @@ apiVersion: objectstorage.k8s.io/v1alpha1
 kind: BucketClass
 metadata:
   name: sg-regular-class
-driverName: sg.cosi.dev
+driverName: coke.sg.cosi.dev
 deletionPolicy: Retain
 parameters:
   bucketType: "regular"
 EOF
 
 # Show BucketClass status
-kubectl get bucketclass sg-regular-class -o yaml | grep -A 5 status
+kubectl get bucketclass sg-regular-class -o yaml
 
-echo "You need to create the bucket manually on StorageGRID to proceed with this Greenfield example, since COSI has no existing bucket to bind to. Please create a bucket named 'my-greenfield-claim' on StorageGRID now, then press ENTER to continue..."
+echo "Press ENTER to dynamically request a BucketClaim. COSI will automatically generate a unique Bucket UUID for you..."
 read -p ""
-
-# Prompt to press ENTER when ready to create the BucketClaim
-read -p "Press ENTER to create the BucketClaim..."
 
 # 2. Developer dynamically requests a new bucket 
 cat <<EOF | kubectl apply -f -
@@ -43,10 +40,19 @@ spec:
   # Note: missing existingBucketName triggers Greenfield mode
 EOF
 
-# Show BucketClaim status
-kubectl get bucketclaim my-greenfield-claim -n sg-cosi-coke -o yaml | grep -A 5 status
+sleep 2
+# Extract the generated bucket name from K8s
+GENERATED_BUCKET_NAME=$(kubectl get bucketclaim my-greenfield-claim -n sg-cosi-coke -o jsonpath='{.status.bucketName}')
 
-# 2. Developer requests access keys for their dynamic bucket claim
+echo "--------------------------------------------------------------------------------------------------"
+echo "Notice! The driver has mocked 'Success' back to Kubernetes, so K8s thinks the bucket is ready."
+echo "However, you must physically create THIS exact bucket name on your StorageGRID Tenant Admin console now:"
+echo "=======> TARGET BUCKET NAME: ${GENERATED_BUCKET_NAME}"
+echo "--------------------------------------------------------------------------------------------------"
+echo "Please create ${GENERATED_BUCKET_NAME} on StorageGRID now."
+read -p "Press ENTER ONLY AFTER YOU HAVE CREATED THE BUCKET ON STORAGEGRID..."
+
+# 3. Developer requests access keys for their dynamic bucket claim
 cat <<EOF | kubectl apply -f -
 apiVersion: objectstorage.k8s.io/v1alpha1
 kind: BucketAccess
@@ -55,7 +61,7 @@ metadata:
   namespace: sg-cosi-coke    # change to namespace where COSI driver is used
 spec:
   bucketClaimName: my-greenfield-claim
-  bucketAccessClassName: sg-cosi-readwrite 
+  bucketAccessClassName: sg-cosi-coke-readonly 
   credentialsSecretName: dynamic-s3-credentials 
   protocol: s3
 EOF

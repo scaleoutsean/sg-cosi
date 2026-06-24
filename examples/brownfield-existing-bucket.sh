@@ -17,7 +17,7 @@ kind: Bucket
 metadata:
   name: sg-brownfield-coke-analytics-bucket # Must be unique across the cluster. This is the global identifier for the bucket in K8s.
 spec:
-  driverName: sg.cosi.dev                  # Check Helm output for the exact driver name deployed in this namespace
+  driverName: coke.sg.cosi.dev             # Check Helm output for the exact driver name deployed in this namespace
   bucketClassName: sg-cosi-coke-default    # Must match your driver's deployed BucketClass
   bucketClaim:
     name: analytics-bucket-claim      # Name of the BucketClaim that will be used to claim this bucket in a namespace
