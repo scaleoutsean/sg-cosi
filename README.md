@@ -41,7 +41,7 @@ The S3 **users** in the Kubernetes namespace served by `sg-cosi` driver still ne
 
 | Component | Versions |
 |-----------|----------|
-| StorageGRID | 12.0 |
+| StorageGRID | 12.1 or 12.0 |
 | Helm | >= 3 |
 | Kubernetes | >= 1.35 |
 | COSI Controller | v0.2.2 (`v1alpha1` specification)|
@@ -84,7 +84,7 @@ kubectl create secret generic sg-tenant-credentials \
 
 ```
 
-Next, copy `./deploy/helm/sg-cosi-driver/values.yaml` to `my-values.yaml` to specify your StorageGRID connection endpoints, Tenant ID and "default" user group for :
+Next, copy `./deploy/helm/sg-cosi-driver/values.yaml` to `my-values.yaml` to specify your StorageGRID connection endpoints, Tenant ID and "default" user (tenant) group:
 
 ```yaml
 driver:
@@ -160,7 +160,12 @@ Because Kubernetes COSI `v1alpha1` employs a strictly decoupled architectural mo
 
 Instead of embedding incomplete snippets here, there's a fully documented, canonical, end-to-end blueprint for mapping existing buckets that's based on the installation steps above to minimize mistakes. You still need your Tenant ID and group IDs used to host ephemeral accounts (used for credentials vending).
 
-Please follow the instructions for two tested workflows in [examples/README](./examples/README.md).
+Please follow the instructions for two tested workflows in [examples/README](./examples/README.md):
+
+- Brownfield: `./examples/brownfield-existing-bucket.sh` 
+- Greenfield (read-only snapshot buckets):
+  - `./examples/greenfield-snapshot-bucket.sh` - uses default `before` (>=StorageGRID 12.0) approach to create a read-only greenfield bucket. `after` from 12.1 works the same way.
+  - `./examples/greenfield-snapshot-between-bucket.sh` the `between` variant of two datetime range-enabled approaches introduced in 12.1. The other one is `exclude`. Two datetime values are required.
 
 ### Multi-Tenant Group Overrides & Credential Expiration
 
@@ -260,6 +265,7 @@ Key parameters are listed below. See [`values.yaml`](deploy/helm/sg-cosi-driver/
 
 | Variable | Description |
 |----------|-------------|
+| `DISABLE_FUTURE_DATETIME` | reject future datetime in snapshot creation (default: `true`) |
 | `DRIVER_NAME` | COSI driver name (required) |
 | `STORAGEGRID_S3_ENDPOINT` | StorageGRID S3 API endpoint URL (required) |
 | `STORAGEGRID_ADMIN_ENDPOINT` | StorageGRID Tenant API endpoint URL (required) |
@@ -291,6 +297,27 @@ kubectl patch bucket <YOUR_BUCKET_NAME> --subresource status --type merge -p '{"
 ```
 
 Only after this successful patch will `BucketAccess` requests successfully trigger the driver to generate StorageGRID S3 credentials.
+
+### `sg-cosi` sanity checks on greenfield snapshot buckets
+
+`sg-cosi` for StorageGRID 12.0 supports the optional `before` parameter for greenfield, read-only, "on-demand" bucket snapshots. For example, you may want to create a snapshot with a point-in-time view as of 23:59:59 on December 31, 2025. `sg-cosi` by default **does not accept** future datetime strings. The latest "before" date it allows is **now**.
+
+StorageGRID 12.1 adds three new possible filters: in addition to `before` which remains the UI default, there's `exclude`, `after`, and `between`. All of them are "anything goes". You can create a bucket snapshot with a view set to the day after tomorrow.
+
+The StorageGRID 12.1 may allow something like this.
+
+```json
+{
+  "baseBucket":"analytics",
+  "filterType":"after",
+  "readOnly":true,
+  "beforeTime":"2050-01-01T01:01:00.000Z"
+}
+```
+
+`sg-cosi` rejects such value out of box. Thanks, but no, thanks!
+
+`sg-cosi` adds support for the new filters from SG 12.1, and continues to reject **future timestamps** by default. `DISABLE_FUTURE_DATETIME` (default: `true`) is there for those who like to shoot themselves in the foot.
 
 ## Architecture (`v1alpha1`)
 
