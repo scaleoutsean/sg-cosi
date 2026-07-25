@@ -2,8 +2,8 @@ apiVersion: v2
 name: sg-cosi
 description: Kubernetes COSI driver for StorageGRID — S3 access management and bucket lifecycle
 type: application
-version: 0.5.3
-appVersion: "0.5.3"
+version: 0.5.4
+appVersion: "0.5.4"
 keywords:
   - cosi
   - s3
@@ -21,4 +21,4 @@ annotations:
   artifacthub.io/license: MIT
   artifacthub.io/changes: |
     - kind: changed
-      description: Initial release of sg-cosi with support for access management and limited bucket lifecycle management on NetApp StorageGRID 12.0.
+      description: Community COSI driver for NetApp StorageGRID 12.[0,1]  with support for access management and limited bucket lifecycle management.
