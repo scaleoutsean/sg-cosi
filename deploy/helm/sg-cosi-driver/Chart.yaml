@@ -3,7 +3,7 @@ name: sg-cosi
 description: Kubernetes COSI driver for StorageGRID — S3 access management and bucket lifecycle
 type: application
 version: 0.5.4
-appVersion: "0.5.4"
+appVersion: "0.5.5"
 keywords:
   - cosi
   - s3
