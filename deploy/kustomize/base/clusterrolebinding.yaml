@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sg-cosi-driver
+  labels:
+    app.kubernetes.io/name: sg-cosi-driver
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sg-cosi-driver
+subjects:
+  - kind: ServiceAccount
+    name: sg-cosi-driver
+    namespace: default

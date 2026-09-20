@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sg-cosi-driver.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sg-cosi-driver.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "sg-cosi-driver.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "sg-cosi-driver.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "sg-cosi-driver.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: driver
+          image: {{ include "sg-cosi-driver.driverImage" . }}
+          imagePullPolicy: {{ .Values.driver.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.driver.securityContext | nindent 12 }}
+          args:
+            - "--endpoint=/var/lib/cosi/cosi.sock"
+          env:
+            - name: DRIVER_NAME
+              value: {{ .Values.driver.name | quote }}
+            - name: STORAGEGRID_S3_ENDPOINT
+              value: {{ .Values.storagegrid.s3Endpoint | quote }}
+            - name: STORAGEGRID_ADMIN_ENDPOINT
+              value: {{ .Values.storagegrid.adminEndpoint | quote }}
+            - name: STORAGEGRID_REGION
+              value: {{ .Values.storagegrid.region | quote }}
+            - name: AWS_S3_ADDRESSING_STYLE
+              value: {{ .Values.storagegrid.s3AddressingStyle | quote }}
+            - name: STORAGEGRID_INSECURE_SKIP_VERIFY
+              value: {{ .Values.storagegrid.tls.insecureSkipVerify | quote }}
+            {{- if .Values.storagegrid.tls.caCertMapName }}
+            - name: COSI_CERTIFICATE_AUTHORITY
+              value: "/var/run/storagegrid-tls/ca.crt"
+            {{- end }}
+            - name: TENANT_ACCOUNT_ID
+              value: {{ .Values.storagegrid.tenant.accountId | quote }}
+            - name: TENANT_GROUP_ID
+              value: {{ .Values.storagegrid.tenant.groupId | quote }}
+            - name: TENANT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.storagegrid.tenant.credentials.secretName }}
+                  key: {{ .Values.storagegrid.tenant.credentials.usernameField | quote }}
+            - name: TENANT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.storagegrid.tenant.credentials.secretName }}
+                  key: {{ .Values.storagegrid.tenant.credentials.passwordField | quote }}
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/cosi
+            {{- if .Values.storagegrid.tls.caCertMapName }}
+            - name: storagegrid-tls
+              mountPath: /var/run/storagegrid-tls
+            {{- end }}
+          resources:
+            {{- toYaml .Values.driver.resources | nindent 12 }}
+
+        - name: sidecar
+          image: {{ include "sg-cosi-driver.sidecarImage" . }}
+          imagePullPolicy: {{ .Values.sidecar.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.sidecar.securityContext | nindent 12 }}
+          args:
+            - "--driver-addr=unix:///var/lib/cosi/cosi.sock"
+            {{- range .Values.sidecar.extraArgs }}
+            - {{ . | quote }}
+            {{- end }}
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/cosi
+          resources:
+            {{- toYaml .Values.sidecar.resources | nindent 12 }}
+
+      volumes:
+        - name: socket-dir
+          emptyDir: {}
+        {{- if .Values.storagegrid.tls.caCertMapName }}
+        - name: storagegrid-tls
+          configMap:
+            name: {{ .Values.storagegrid.tls.caCertMapName }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

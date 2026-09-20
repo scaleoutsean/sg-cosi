@@ -1,0 +1,153 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: snapshotleases.cosi.scaleoutsean.github.io
+spec:
+  group: cosi.scaleoutsean.github.io
+  names:
+    kind: SnapshotLease
+    listKind: SnapshotLeaseList
+    plural: snapshotleases
+    singular: snapshotlease
+    shortNames:
+      - sl
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      additionalPrinterColumns:
+        - name: Phase
+          type: string
+          jsonPath: .status.phase
+        - name: Expires
+          type: date
+          jsonPath: .status.expiresAt
+        - name: Source
+          type: string
+          jsonPath: .spec.sourceBucket
+        - name: Secret
+          type: string
+          jsonPath: .status.resources.credentialsSecret
+      subresources:
+        status: {}
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              required:
+                - driverName
+                - sourceBucket
+                - duration
+              properties:
+                driverName:
+                  type: string
+                  minLength: 1
+                  x-kubernetes-validations:
+                    - rule: self == oldSelf
+                      message: driverName is immutable
+                sourceBucket:
+                  type: string
+                  minLength: 1
+                  x-kubernetes-validations:
+                    - rule: self == oldSelf
+                      message: sourceBucket is immutable
+                duration:
+                  type: string
+                  pattern: ^([0-9]+(\.[0-9]+)?(ns|us|µs|ms|s|m|h))+$
+                  x-kubernetes-validations:
+                    - rule: self == oldSelf
+                      message: duration is immutable
+                renewUntil:
+                  type: string
+                  format: date-time
+                beforeTime:
+                  type: string
+                  format: date-time
+                  x-kubernetes-validations:
+                    - rule: self == oldSelf
+                      message: beforeTime is immutable
+                afterTime:
+                  type: string
+                  format: date-time
+                  x-kubernetes-validations:
+                    - rule: self == oldSelf
+                      message: afterTime is immutable
+                filterType:
+                  type: string
+                  enum: [before, after, between, exclude]
+                  x-kubernetes-validations:
+                    - rule: self == oldSelf
+                      message: filterType is immutable
+                credentialsSecretName:
+                  type: string
+                  maxLength: 253
+                  x-kubernetes-validations:
+                    - rule: self == oldSelf
+                      message: credentialsSecretName is immutable
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum: [Pending, Provisioning, Active, Cleaning, Expired, Failed]
+                expiresAt:
+                  type: string
+                  format: date-time
+                hardExpiresAt:
+                  type: string
+                  format: date-time
+                  x-kubernetes-validations:
+                    - rule: self == oldSelf
+                      message: hardExpiresAt is immutable
+                accessKeyExpiresAt:
+                  type: string
+                  format: date-time
+                  x-kubernetes-validations:
+                    - rule: self == oldSelf
+                      message: accessKeyExpiresAt is immutable
+                observedGeneration:
+                  type: integer
+                  format: int64
+                resources:
+                  type: object
+                  properties:
+                    bucketClass:
+                      type: string
+                    bucketAccessClass:
+                      type: string
+                    bucketClaim:
+                      type: string
+                    bucketAccess:
+                      type: string
+                    credentialsSecret:
+                      type: string
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    required: [lastTransitionTime, message, reason, status, type]
+                    properties:
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
+                      message:
+                        type: string
+                      observedGeneration:
+                        type: integer
+                        format: int64
+                      reason:
+                        type: string
+                      status:
+                        type: string
+                        enum: ["True", "False", Unknown]
+                      type:
+                        type: string

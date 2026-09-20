@@ -1,0 +1,13 @@
+apiVersion: cosi.scaleoutsean.github.io/v1alpha1
+kind: SnapshotLease
+metadata:
+  name: project1-backup-source
+  namespace: sg-cosi-coke
+spec:
+  driverName: coke.sg.cosi.dev
+  sourceBucket: project1
+  duration: 24h
+  # Optional point-in-time and filter settings:
+  # beforeTime: "2026-09-16T00:00:00Z"
+  # filterType: before
+  credentialsSecretName: project1-backup-source-credentials

@@ -1,0 +1,26 @@
+apiVersion: v2
+name: sg-cosi
+description: Kubernetes COSI driver for StorageGRID — S3 access management and bucket lifecycle
+type: application
+version: 0.6.0
+appVersion: "0.6.0"
+keywords:
+  - cosi
+  - s3
+  - object-storage
+  - storagegrid
+  - bucket
+  - kubernetes
+  - netapp
+maintainers:
+  - name: scaleoutsean
+# sources:
+#   - https://github.com/scaleoutsean/sg-cosi
+home: https://github.com/scaleoutsean/sg-cosi
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/changes: |
+    - kind: added
+      description: Optional alpha SnapshotLease controller for bounded snapshot sources and ordered cleanup.
+    - kind: changed
+      description: Community COSI driver for NetApp StorageGRID 12.[0,1]  with support for access management and limited bucket lifecycle management.

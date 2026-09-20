@@ -1,0 +1,134 @@
+{{- if .Values.snapshotLease.enabled }}
+{{- if .Values.snapshotLease.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "sg-cosi-driver.snapshotLeaseServiceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sg-cosi-driver.labels" . | nindent 4 }}
+    app.kubernetes.io/component: snapshotlease-controller
+  {{- with .Values.snapshotLease.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+---
+{{- end }}
+{{- if .Values.snapshotLease.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sg-cosi-driver.fullname" . }}-snapshotlease
+  labels:
+    {{- include "sg-cosi-driver.labels" . | nindent 4 }}
+    app.kubernetes.io/component: snapshotlease-controller
+rules:
+  - apiGroups: ["cosi.scaleoutsean.github.io"]
+    resources: ["snapshotleases"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["cosi.scaleoutsean.github.io"]
+    resources: ["snapshotleases/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["objectstorage.k8s.io"]
+    resources: ["bucketclasses", "bucketaccessclasses", "bucketclaims", "bucketaccesses"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "sg-cosi-driver.fullname" . }}-snapshotlease
+  labels:
+    {{- include "sg-cosi-driver.labels" . | nindent 4 }}
+    app.kubernetes.io/component: snapshotlease-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "sg-cosi-driver.fullname" . }}-snapshotlease
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sg-cosi-driver.snapshotLeaseServiceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sg-cosi-driver.fullname" . }}-snapshotlease
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "sg-cosi-driver.labels" . | nindent 4 }}
+    app.kubernetes.io/component: snapshotlease-controller
+spec:
+  replicas: {{ .Values.snapshotLease.replicas }}
+  selector:
+    matchLabels:
+      {{- include "sg-cosi-driver.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: snapshotlease-controller
+  template:
+    metadata:
+      labels:
+        {{- include "sg-cosi-driver.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: snapshotlease-controller
+    spec:
+      serviceAccountName: {{ include "sg-cosi-driver.snapshotLeaseServiceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: controller
+          image: {{ include "sg-cosi-driver.driverImage" . }}
+          imagePullPolicy: {{ .Values.driver.image.pullPolicy }}
+          command: ["/usr/bin/sg-cosi-snapshotlease-controller"]
+          args:
+            - "--driver-name={{ include "sg-cosi-driver.driverName" . }}"
+            - "--max-lifetime={{ .Values.snapshotLease.maxLifetime }}"
+            - "--credential-grace={{ .Values.snapshotLease.credentialGrace }}"
+            - "--resync-interval={{ .Values.snapshotLease.resyncInterval }}"
+            - "--leader-elect={{ .Values.snapshotLease.leaderElection }}"
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - name: metrics
+              containerPort: 8080
+            - name: health
+              containerPort: 8081
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+          securityContext:
+            {{- toYaml .Values.snapshotLease.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.snapshotLease.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
