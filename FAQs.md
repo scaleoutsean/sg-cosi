@@ -4,7 +4,8 @@
     - [I can't delete something](#i-cant-delete-something)
     - [Which COSI `bc-` maps to which `ba-` user on SG?](#which-cosi-bc--maps-to-which-ba--user-on-sg)
   - [Meta](#meta)
-    - [Where's the source code?](#wheres-the-source-code)
+    - [Is this the official NetApp COSI driver?](#is-this-the-official-netapp-cosi-driver)
+    - [Where's the source code for `sg-cosi`?](#wheres-the-source-code-for-sg-cosi)
 
 # FAQs
 
@@ -38,12 +39,14 @@ sgUserId="3928b720-491c-445f-8f4d-ae2cc24b9aff" sgUniqueName="ba-cb5c3aa6"
 
 ## Meta
 
-### Is this the NetApp official driver?
+### Is this the official NetApp COSI driver?
 
-No, as of September 2026, NetApp does not seem to have one. 
+No. This is a personal Github account.
 
-This is a personal repository, so... "contact your NetApp representative."
+As of September 2026, NetApp does not seem to have one, but check their Web site or "contact your NetApp representative".
 
-### Where's the source code?
+### Where's the source code for `sg-cosi`?
 
-It's not available. Why, see [the end of the blog post](https://scaleoutsean.github.io/2026/06/07/cosi-v1alpha1-is-garbage.html#conclusion) about `sg-cosi`. I'm not eager to maintain this driver outside of what I might need it for myself (occasional solutioning and solution development).
+It's not available.
+
+Why, see [the end of the blog post](https://scaleoutsean.github.io/2026/06/07/cosi-v1alpha1-is-garbage.html#conclusion) about `sg-cosi`: I'm not eager to maintain this driver outside of solutioning and solution development, for which which it works well enough without the hassle of maintaining a public source code repository and getting anything in return. 
