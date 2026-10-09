@@ -1,4 +1,4 @@
-# `sg-cosi` driver - COSI `v1alpha1`-compatible driver for NetApp StorageGRID 12.0
+# `sg-cosi` driver - COSI `v1alpha1`-compatible driver for NetApp StorageGRID 12 (12.0, 12.1)
 
 ## What it is and what it does
 
@@ -39,6 +39,12 @@ COSI drivers can talk to StorageGRID over two endpoints. `sg-cosi` currently sup
 | S3 API (TCP/10443) | N | Data Flow; `sg-cosi` doesn't support regular bucket create/delete, so it doesn't use this endpoint |
 
 The S3 **users** in the Kubernetes namespace served by `sg-cosi` driver still need access to S3 API endpoints.
+
+## SGII (StorageGRID Incremental Inventory)
+
+Snapshot Leases from `sg-cosi` v0.6.0 use COSI functionality to create read-only bucket snapshots that can be used for point-in-time backup.
+
+Since `v0.6.0-sgii`, this functionality - with some extra tools - has been made available in a stand-alone tool, SGII. Get it in Releases and try with `sgi -h`.
 
 ## Compatibility
 
@@ -326,7 +332,10 @@ The StorageGRID 12.1 may allow something like this.
 
 ```mermaid
 graph LR
-    BC[BucketClaim] --> CC[COSI Controller]
+  SL[SnapshotLease: patch spec.renewUntil to extend] --> SLC[SnapshotLease Controller]
+  SLC -- manages --> BC[BucketClaim: regular or snapshot]
+  SLC -- manages --> BA[BucketAccess]
+  BC --> CC[COSI Controller]
     BA[BucketAccess] --> CC
     CC --> CS[COSI Sidecar]
     CS -- gRPC / Unix Socket --> D[sg-cosi driver]
@@ -381,7 +390,7 @@ Check that the COSI controller is running (`kubectl get pods -n <NAMESPACE> | gr
 Make sure the admin credentials Secret exists with valid keys, and that the admin account has permission to create users and set bucket policies.
 
 **What's COSI sidecar doing?**
-```
+```sh
 kubectl get deploy -n <NAMESPACE>
 kubectl logs deploy/<DEPLOYMENT_NAME> -c sidecar -n <NAMESPACE> --tail=30
 ```

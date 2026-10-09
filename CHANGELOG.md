@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.0-sgii]
+
+- Changed: no changes to COSI functionality, binary or documentation - please use v0.6.0
+- New: SGII (StorageGRID Incremental Inventory), a stand-alone utility for creation of StorageGRID read-only snapshots, inventory and report generation (try `sgi -h`)
+
 ### [0.6.0] - 2026-09-21
 
 - Support exact RFC3339 `expiresAt` values for StorageGRID S3 access keys while retaining the existing `validDays` parameter
