@@ -42,9 +42,11 @@ The S3 **users** in the Kubernetes namespace served by `sg-cosi` driver still ne
 
 ## SGII (StorageGRID Incremental Inventory)
 
-Snapshot Leases from `sg-cosi` v0.6.0 use COSI functionality to create read-only bucket snapshots that can be used for point-in-time backup.
+Snapshot Leases since `sg-cosi` v0.6.0 use COSI functionality to create read-only bucket snapshots that can be used for point-in-time backup.
 
 Since `v0.6.0-sgii`, this functionality - with some extra tools - has been made available in a stand-alone tool, SGII. Get it in Releases and try with `sgi -h`.
+
+See [SGII](SGII.md) for more.
 
 ## Compatibility
 
