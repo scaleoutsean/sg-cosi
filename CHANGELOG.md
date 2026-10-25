@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.6.1] - 2026-10-20
+## [0.6.1] - 2026-10-26
 
 - Changed: 3rd party updates (Go and 3rd party dependencies including security updates) in `sg-cosi`:
   - Vulnerability #1: GO-2026-6617: HTTP/2 server crash due to HPACK encoder race in net/http
