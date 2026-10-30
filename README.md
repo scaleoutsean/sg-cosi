@@ -64,6 +64,10 @@ While it may be tempting to just use `:latest`, this isn't one of those cases. C
 - **Tenant Management API:** the COSI driver needs network access to a Tenant Management endpoint. Make sure this endpoint is reachable from COSI driver pod.
 - **Tenant S3 API:** the S3 clients from the COSI-enabled namespace require access to the S3 API endpoint. Because `sg-cosi` deliberately does not support buckets creation and deletion over S3 API, it does not need to connect over S3 API endpoint. But COSI users (clients) need access to this API endpoint.
 
+### 0. Disable Netapp Trident COSI
+
+You shouldn't run both at the same time. You can find more about it [here](https://docs.netapp.com/us-en/trident/trident-use/cosi.html#overview).
+
 ### 1. Install the COSI Controller
 
 If you try another version, including `:latest` (if it's not equivalent to v0.2.2), `sg-cosi` is very likely to fail or malfunction.
