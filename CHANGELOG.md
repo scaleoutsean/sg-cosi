@@ -2,7 +2,13 @@
 
 ## [0.6.2] - 2026-10-31
 
-- Changed: 3rd party updates (Go and 3rd party dependencies including security updates)
+- Changed: 3rd party updates (3rd party dependencies including security updates)
+  - Vulnerability #1: GO-2026-6866
+  - Vulnerability #2: GO-2026-6860
+
+## [sgii-0.1.1] - 2026-10-31
+
+- Changed: 3rd party updates (3rd party dependencies including security updates)
   - Vulnerability #1: GO-2026-6866
   - Vulnerability #2: GO-2026-6860
 
