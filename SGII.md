@@ -299,6 +299,10 @@ This is intentionally different from a version-preserving backup query.
 
 For one object key, S3 marks exactly one entry as `IsLatest` - either the newest object version or the newest delete marker. What that means is if the same object gets uploaded twice (t0 version, t1 version), and deleted once after that (t3), `--latest-only` should show only the deletion as the latest change. In the opposite case (delete isn't the last action on a key), an "intermediate" deletion won't show up as "latest" since another PUT that came after it would be "latest" at the end of snapshot time range.
 
+### Can I use SGII inventory table to create sitemap.xml?
+
+See `examples/sgii/README.md`.
+
 ### Which objects should be deleted at the destination?
 
 If you're replicating or copying to a remote bucket, delete markers can produce a destination deletion worklist:

@@ -1,4 +1,5 @@
 *.toml
 bin/
 *.sh
+!examples/sgii/sgii-ingest.sh
 *.py
