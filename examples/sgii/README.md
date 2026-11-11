@@ -40,7 +40,7 @@ Run the standalone Python 3 converter, [`sgii-ingest.py`](./sgii-ingest.py). It 
 mkdir -p examples/sgii/sitemaps
 python3 examples/sgii/sgii-ingest.py \
   --input web-objects.jsonl \
-  --base-url https://proj1a2b3c.public.company.com/ \
+  --base-url https://proj1a2b3c.public.company.com \
   --extensions .txt,.md \
   --output examples/sgii/sitemaps/snapshot-proof.xml
 ```
@@ -135,10 +135,10 @@ sgi query objects \
   --env-file kompromise-cosi-snapshots/.env
 ```
 
-It is important to perform some checks, such that prefixes (paths) that shouldn't be included aren't included.
+It is important to perform some checks, such that prefixes (paths) that shouldn't be included aren't included. I don't want any `intranet_blog` paths in fed to AI search, for example.
 
 ```sh
-grep intranet_blog examples/sgii/web-objects.jsonl
+grep intranet_blog web-objects.jsonl
 ```
 
 Since my server is at `https://<FQDN>:<PORT>` where PORT isn't 443, I need to provide that detail along with desired extensions (mostly Markdown, really).
