@@ -135,15 +135,15 @@ sgi query objects \
   --env-file kompromise-cosi-snapshots/.env
 ```
 
-It is important to perform some checks, such as that prefixes (paths) that shouldn't be included aren't included.
+It is important to perform some checks, such that prefixes (paths) that shouldn't be included aren't included.
 
 ```sh
 grep intranet_blog examples/sgii/web-objects.jsonl
 ```
 
 Since my server is at `https://<FQDN>:<PORT>` where PORT isn't 443, I need to provide that detail along with desired extensions (mostly Markdown, really).
-```
-$ python3 examples/sgii/sgii-ingest.py \
+```sh
+python3 examples/sgii/sgii-ingest.py \
   --input web-objects.jsonl \
   --base-url https:///<FQDN>:<PORT>/ \
   --extensions .txt,.md
@@ -155,11 +155,11 @@ This gives me a site-map.
 snapshot-20261110T093439Z-1794303279263137839-287e601ac167.xml
 ```
 
-I moved that file to `./sitemaps/` for Docker Compose.
+I moved that file to `./sitemaps/` for Docker Compose. For the same bucket, multiple XML files could be stored and served from this same proxy, as long as bucket policy allows.
 
 Note that in this particular example, I messed up and used Caddy at `https://dt.datafabric.lan`, but the TLS certificate I created had issues with that name and the port was not set. I had to search-and-replace the XML file (or re-run the ingest command) to make that base URL `https://dt:8443` instead (as that was easier than re-issuing the certificate and changing the DNS entry).
 
-Also remember that proxy's protocol, host name and port for `endpoint` must match what you have in sitemap XML (valid hostname and TLS certificate for the StorageGRID S3 API endpoint).
+Also remember that proxy's protocol, host name and port for `endpoint` must match what you have in the sitemap XML (valid hostname and TLS certificate for the StorageGRID S3 API endpoint).
 
 We need to do just two more things:
 - Apply a bucket policy for the S3 keys used by our Web proxy
@@ -198,10 +198,12 @@ Tenant root or any of `ai-managers` can clone the bucket and assign a bucket pol
 }
 ```
 
+Note that the bot resource allows access to everything in `s3://ai-cloner-snap/public_blog/*`, which was the idea. Tighten it further if you need to.
+
 Anyone from `ai-managers`, because I gave the group "Manage all buckets" permission, can upload this policy file to the snapshot bucket:
 
 ```sh
-aws s3api put-bucket-policy --bucket ai-cloner-clone --policy file://policy.json
+aws s3api put-bucket-policy --bucket ai-cloner-snap --policy file://policy.json
 ```
 
 Remember to start your Web proxy with the correct S3 credentials, otherwise the sitemap may be served okay, but object contents not at all.
