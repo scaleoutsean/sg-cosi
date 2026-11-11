@@ -1,0 +1,41 @@
+{
+    debug
+}
+
+s3.scaleoutsean.com:8443 {
+    log {
+        output stdout
+        format json
+    }
+    # tls <cert-path> <key-path> # use this for internal proxy TLS certificate (instead of Let's Encrypt)
+    # Serve the uniquely-named sitemap from disk
+    handle /{$SG_SITEMAP} {
+        root * /var/lib/sitemaps
+        file_server
+    }
+
+    # Everything else from S3 snapshot bucket 
+    handle {
+        route {
+            s3proxy {
+                # Alternatively, configure a profile and mount its AWS credentials file.
+                # profile <aws-profile>
+                bucket <my-snapshot-bucket>
+                # change if you have a different one
+                region us-east-1
+                # StorageGRID tenant's S3 API hostname/IP that matches its TLS certificate and <PORT>
+                endpoint https://<my-tenant-s3-api-fqdn>:<port>
+                force_path_style
+                # index index.html    # optional
+                # browse              # disable directory listing for obscurity/security
+            }
+        }
+    }
+}
+
+# other stuff you may have
+storagegrid.scaleoutsean.com {
+    reverse_proxy https://<public-firewall-dns-name>:10443 {
+        header_up Host {http.request.host}
+    }
+}

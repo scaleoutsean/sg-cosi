@@ -1,0 +1,25 @@
+
+services:
+  caddy:
+    # image: caddy
+    image: ghcr.io/scaleoutsean/caddy-s3-proxy:latest
+    environment:
+      SG_SITEMAP: ${SG_SITEMAP:?Set SG_SITEMAP in .env}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?Set AWS_ACCESS_KEY_ID in .env}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?Set AWS_SECRET_ACCESS_KEY in .env}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+    volumes:
+      - ./Caddyfile:/etc/Caddyfile:ro
+      - ./config:/config
+      - ./sitemaps:/var/lib/sitemaps:ro
+      # Persistent certificates, private keys, and ACME state
+      - caddy_data:/data
+    # Expose ports for HTTP and HTTPS. These are Caddy's default ports, not StorageGRID S3 API ports
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    command: caddy run --config /etc/Caddyfile
+
+volumes:
+  caddy_data:
