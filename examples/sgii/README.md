@@ -155,7 +155,7 @@ This gives me a site-map.
 snapshot-20261110T093439Z-1794303279263137839-287e601ac167.xml
 ```
 
-I moved that file to `./sitemaps/` for Docker Compose. For the same bucket, multiple XML files could be stored and served from this same proxy, as long as bucket policy allows.
+I moved that file to `./sitemaps/` for Docker Compose. For the same bucket, multiple XML files could be stored and served from this same proxy, as long as bucket policy (see further below) is crafted to allow that.
 
 Note that in this particular example, I messed up and used Caddy at `https://dt.datafabric.lan`, but the TLS certificate I created had issues with that name and the port was not set. I had to search-and-replace the XML file (or re-run the ingest command) to make that base URL `https://dt:8443` instead (as that was easier than re-issuing the certificate and changing the DNS entry).
 
@@ -218,7 +218,7 @@ docker compose up
 Therefore, test access with the XML sitemap first, as that's served by the proxy server, not S3. Then try accessing bucket contents. For example:
 
 ```sh
-wget https://dt:8443/public_blog/2026-07-25-weka-io-tier-cold-to-netapp-storagegrid.md
+$ wget https://dt:8443/public_blog/2026-07-25-weka-io-tier-cold-to-netapp-storagegrid.md
 --2026-11-11 11:30:14--  https://dt:8443/public_blog/2026-07-25-weka-io-tier-cold-to-netapp-storagegrid.md
 Resolving dt (dt)... 192.168.1.13
 Connecting to dt (dt)|192.168.1.13|:8443... connected.
