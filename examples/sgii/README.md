@@ -165,7 +165,7 @@ We need to do just two more things:
 - Apply a bucket policy for the S3 keys used by our Web proxy
 - Start serving this sitemap file and proxying access to the bucket
 
-Tenant root or any of `ai-managers` can clone the bucket and assign a bucket policy like this:
+Tenant root or any of `ai-managers` (with appropriate group or bucket policy) can clone the bucket and assign a bucket policy similar to this one:
 
 ```json
 {
@@ -177,7 +177,9 @@ Tenant root or any of `ai-managers` can clone the bucket and assign a bucket pol
       },
       "Action": [
         "s3:GetObject",
-        "s3:ListBucket"
+        "s3:ListBucket",
+        "s3:PutBucketPolicy",
+        "s3:GetBucketPolicy"
       ],
       "Resource": [
         "arn:aws:s3:::ai-cloner-snap",
@@ -198,9 +200,9 @@ Tenant root or any of `ai-managers` can clone the bucket and assign a bucket pol
 }
 ```
 
-Note that the bot resource allows access to everything in `s3://ai-cloner-snap/public_blog/*`, which was the idea. Tighten it further if you need to.
+Note that the bot `Resource` allows access to everything in `s3://ai-cloner-snap/public_blog/`, which was the idea. Tighten it further if you need to.
 
-Anyone from `ai-managers`, because I gave the group "Manage all buckets" permission, can upload this policy file to the snapshot bucket:
+Anyone from `ai-managers`, if we gave the group "Manage all buckets" permission or `PutBucketPolicy` on the bucket, can upload this policy file to the snapshot bucket:
 
 ```sh
 aws s3api put-bucket-policy --bucket ai-cloner-snap --policy file://policy.json
