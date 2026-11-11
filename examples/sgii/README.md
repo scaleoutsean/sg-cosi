@@ -227,13 +227,74 @@ Saving to: ‘2026-07-25-weka-io-tier-cold-to-netapp-storagegrid.md’
 
 Caddy log:
 
-```raw
-
+```json
+{
+  "level": "info",
+  "ts": 1794367815.5537472,
+  "logger": "http.log.access.log0",
+  "msg": "handled request",
+  "request": {
+    "remote_ip": "192.168.1.13",
+    "remote_port": "37460",
+    "client_ip": "192.168.1.13",
+    "proto": "HTTP/1.1",
+    "method": "GET",
+    "host": "dt:8443",
+    "uri": "/public_blog/2026-07-25-weka-io-tier-cold-to-netapp-storagegrid.md",
+    "headers": {
+      "Connection": [
+        "Keep-Alive"
+      ],
+      "User-Agent": [
+        "Wget/1.21.4"
+      ],
+      "Accept": [
+        "*/*"
+      ],
+      "Accept-Encoding": [
+        "identity"
+      ]
+    },
+    "tls": {
+      "resumed": false,
+      "version": 772,
+      "cipher_suite": 4865,
+      "proto": "",
+      "server_name": "dt",
+      "ech": false
+    }
+  },
+  "bytes_read": 0,
+  "user_id": "",
+  "duration": 0.469134664,
+  "size": 13688,
+  "status": 200,
+  "resp_headers": {
+    "Server": [
+      "Caddy"
+    ],
+    "Alt-Svc": [
+      "h3=\":8443\"; ma=2592000"
+    ],
+    "Content-Type": [
+      "text/markdown"
+    ],
+    "Etag": [
+      "\"e4c8926ec3653885e7de7941d81a4305\""
+    ],
+    "Last-Modified": [
+      "Mon, 09 Nov 2026 04:59:50 GMT"
+    ],
+    "Accept-Ranges": [
+      "bytes"
+    ]
+  }
+}
 ```
 
-StorageGRID audit log (formatted by me for sanity) for bucket policy, HTTP access, and auditing:
+StorageGRID audit log (formatted by me for sanity) for bucket policy applied, and HTTP access and audit entries related to GetObject access:
 
-```raw
+```sh
 2026-11-11T03:29:22+08:00 
   sg-storage-02 
   Audit: 2026-11-11T03:29:22.713729 
