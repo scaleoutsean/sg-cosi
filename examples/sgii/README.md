@@ -62,10 +62,10 @@ The same command can target an incremental manifest, but a `between` scan contai
 Because of that, prefix filtering and `sitemap.xml` cannot limit access to snapshot bucket's contents. Depending on how the bucket is shared, other objects may be accessible even if they're not enumerated in `sitemap.xml`.
 
 What you can do about it:
-- Create an `ai-bot` group and individual bots that belong to it, with no S3 access by default. Use these principals (either the group, or individual bots) in snapshot bucket's ACLs.
-- If you use tags, `s3:ExistingObjectTag/<tag-key>` can be used in ACLs to limit access by tag
-- `s3:prefix`
-- In addition to prefix filtering, apply restrictive bucket ACL on the snapshot: allow access to the prefix directory and deny access to the rest. This is recommended if bucket data is read by users other than bucket owner.
+- Create the `ai-bot` group and individual bots that belong to it, with no S3 access by default. Use these principals (either the group, or individual bots) in snapshot bucket's policies.
+- If you use tags, `s3:ExistingObjectTag/<tag-key>` can be used in policies to limit access by tag
+- `s3:prefix` can be used for prefix filtering (`"Condition": { "StringLike": { "s3:prefix": "public_blog/*"}`)
+- In addition to prefix filtering, apply restrictive bucket policy on the snapshot: allow access to the prefix directory and deny access to the rest (deny is default if the `ai-bot` group was created without access). This is recommended if bucket data is accessed by users other than bucket owner.
 - Or, apply path restrictions on HTTPS reverse proxy (allow prefix paths and sitemap.xml, while denying all others).
 
 The container that shares S3 data needs credentials to access StorageGRID (the assumption is you won't share to anonymous). Use S3 keys with minimum-scoped (`s3:GetObject`) ACLs on only the bucket your gateway serves. Dispose the container and keys afterwards. STS AssumeRole can be used as well.
