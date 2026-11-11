@@ -42,10 +42,10 @@ python3 examples/sgii/sgii-ingest.py \
   --input web-objects.jsonl \
   --base-url https://proj1a2b3c.public.company.com \
   --extensions .txt,.md \
-  --output examples/sgii/sitemaps/snapshot-proof.xml
+  --output examples/sgii/sitemaps/sitemap-ai-cloner-snap.xml
 ```
 
-Use the gateway's actual public hostname for `--base-url`. For the supplied Compose setup, set `SG_SITEMAP=snapshot-proof.xml` in its `.env` file and recreate the Caddy container after changing this variable. The sitemap URL is then `https://proj1a2b3c.public.company.com/snapshot-proof.xml`. Use a fresh output filename for each subsequent run; do not write into the read-only snapshot bucket.
+Use the gateway's actual public hostname for `--base-url`. For the supplied Compose setup, set `SG_SITEMAP=sitemap-ai-cloner-snap.xml` in its `.env` file and recreate the Caddy container after changing this variable. The sitemap URL is then `https://proj1a2b3c.public.company.com/sitemap-ai-cloner-snap.xml`. Use a fresh output filename for each subsequent run or leave empty for auto-naming. Do not try to write the file into the read-only snapshot bucket.
 
 For example, add `--since 2026-11-01T00:00:00Z --before 2026-11-09T00:00:00Z` to restrict modification times. Object-key URL encoding and XML escaping are separate operations; the converter handles both. It refuses to overwrite an existing output file and checks the sitemap protocol limits. For larger inventories, split the output and serve a sitemap index instead.
 
