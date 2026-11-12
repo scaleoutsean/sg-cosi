@@ -45,7 +45,9 @@ python3 examples/sgii/sgii-ingest.py \
   --output examples/sgii/sitemaps/sitemap-ai-cloner-snap.xml
 ```
 
-Use the gateway's actual public hostname for `--base-url`. For the supplied Compose setup, set `SG_SITEMAP=sitemap-ai-cloner-snap.xml` in its `.env` file and recreate the Caddy container after changing this variable. The sitemap URL is then `https://proj1a2b3c.public.company.com/sitemap-ai-cloner-snap.xml`. Use a fresh output filename for each subsequent run or leave empty for auto-naming. Do not try to write the file into the read-only snapshot bucket.
+Use the gateway's actual public hostname for `--base-url`. Update the sitemap `handle` and the absolute `Sitemap:` URL in `Caddyfile` to match the public hostname, port, and output filename. The example serves `/robots.txt` directly from Caddy and permits crawlers; it does not need an object in the snapshot bucket. Reload or recreate Caddy after changing its configuration, then check `https://<public-host>/robots.txt` and the sitemap URL from outside the network. Use a fresh output filename for each subsequent run or leave empty for auto-naming. Do not try to write the file into the read-only snapshot bucket.
+
+`robots.txt` is a crawler instruction, not access control; enforce any restrictions separately through the gateway and bucket policy.
 
 For example, add `--since 2026-11-01T00:00:00Z --before 2026-11-09T00:00:00Z` to restrict modification times. Object-key URL encoding and XML escaping are separate operations; the converter handles both. It refuses to overwrite an existing output file and checks the sitemap protocol limits. For larger inventories, split the output and serve a sitemap index instead.
 
@@ -145,8 +147,9 @@ Since my server is at `https://<FQDN>:<PORT>` where PORT isn't 443, I need to pr
 ```sh
 python3 examples/sgii/sgii-ingest.py \
   --input web-objects.jsonl \
-  --base-url https:///<FQDN>:<PORT>/ \
-  --extensions .txt,.md
+  --base-url https://<FQDN>:<PORT>/ \
+  --extensions .txt,.md \
+  --output ai-cloner-snap.xml
 ```
 
 This gives me a site-map.
@@ -155,11 +158,15 @@ This gives me a site-map.
 snapshot-20261110T093439Z-1794303279263137839-287e601ac167.xml
 ```
 
-I moved that file to `./sitemaps/` for Docker Compose. For the same bucket, multiple XML files could be stored and served from this same proxy, as long as bucket policy (see further below) is crafted to allow that.
+I moved that file to `./sitemaps/ai-cloner-snap.xml` for Docker Compose. For the same bucket, multiple XML files could be stored and served from this same proxy, as long as bucket policy (see further below) is crafted to allow that. If my Docker instance is already running, I could make Caddy reload it without a restart.
 
-Note that in this particular example, I messed up and used Caddy at `https://dt.datafabric.lan`, but the TLS certificate I created had issues with that name and the port was not set. I had to search-and-replace the XML file (or re-run the ingest command) to make that base URL `https://dt:8443` instead (as that was easier than re-issuing the certificate and changing the DNS entry).
+```sh
+docker compose exec caddy caddy reload --config /Caddyfile --adapter caddyfile
+```
 
-Also remember that proxy's protocol, host name and port for `endpoint` must match what you have in the sitemap XML (valid hostname and TLS certificate for the StorageGRID S3 API endpoint).
+In this particular example, I messed up and used Caddy at `https://dt.datafabric.lan`, but the TLS certificate I created had issues with that name and the port was not set. I had to search-and-replace the XML file (or re-run the ingest command) to make that base URL `https://dt:8443` instead (as that was easier than re-issuing the certificate and changing the DNS entry).
+
+Also, remember that proxy's protocol, host name and port for `endpoint` must match what you have in the sitemap XML (valid hostname and TLS certificate for the StorageGRID S3 API endpoint).
 
 We need to do just two more things:
 - Apply a bucket policy for the S3 keys used by our Web proxy
@@ -323,7 +330,8 @@ StorageGRID audit log (formatted by me for sanity) for bucket policy applied, an
 2026-11-11T03:30:15+08:00 
   sg-admin-01 
   endpoint: [2026-11-11T03:30:15+00:00] 
-    192.168.1.13 200 6529 550 0.343 "8f8035a9-f517-4a5d-b916-6ec16134f56a" "192.168.1.213:18086"
+    192.168.1.13 200 6529 550 0.343 
+    "8f8035a9-f517-4a5d-b916-6ec16134f56a" "192.168.1.213:18086"
     "GET /ai-cloner-snap/public_blog/2026-07-25-weka-io-tier-cold-to-netapp-storagegrid.md HTTP/1.1" 
     "192.168.1.211:10443"
 
@@ -369,7 +377,7 @@ $ mc ls pepsi/ai-cloner-snap/intranet_blog/2021-07-19-solidfire-mib-snmp-monitor
 [2026-11-09 13:19:35 CST]  44KiB STANDARD 2021-07-19-solidfire-mib-snmp-monitoring.md
 ```
 
-AI marketing bots are **not** supposed to be able to access these:
+AI marketing bots are **not** supposed to be able to access the following:
 - Base bucket: we can't really tell as HTTP client, since the Web server connects to only the snapshot bucket. We could test with an S3 client, but that's separate from this use case
 - We can try this on the snapshot bucket shared by the proxy: `wget https://dt:8443/internal_blog/2021-07-16-iqn-level-chap-authentiation-on-solidfire.md`
 
@@ -389,8 +397,8 @@ StorageGRID has no audit log for this attempt because only access on load balanc
 ```sh
 2026-11-11T03:53:58+08:00 sg-admin-01 
   endpoint: 
-    [2026-11-11T03:53:58+00:00] 192.168.1.13 403 519 554 0.164 "8f8035a9-f517-4a5d-b916-6ec16134f56a"
-    "192.168.1.213:18086"
+    [2026-11-11T03:53:58+00:00] 192.168.1.13 403 519 554 0.164
+    "8f8035a9-f517-4a5d-b916-6ec16134f56a" "192.168.1.213:18086"
     "GET /ai-cloner-snap/internal_blog/2021-07-16-iqn-level-chap-authentiation-on-solidfire.md HTTP/1.1"
     "192.168.1.211:10443"
 ```

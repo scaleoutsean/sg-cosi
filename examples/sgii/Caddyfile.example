@@ -1,41 +1,53 @@
 {
-    debug
+	debug
+	order s3proxy last
+	auto_https disable_redirects
 }
 
-s3.scaleoutsean.com:8443 {
-    log {
-        output stdout
-        format json
-    }
-    # tls <cert-path> <key-path> # use this for internal proxy TLS certificate (instead of Let's Encrypt)
-    # Serve the uniquely-named sitemap from disk
-    handle /{$SG_SITEMAP} {
-        root * /var/lib/sitemaps
-        file_server
-    }
+# EDIT: this is your Web proxy's domain
+s3proxy.example.com:8443 {
+	log {
+		output stdout
+		format json
+	}
+	# tls <cert-path> <key-path> # use this for internal proxy TLS certificate (instead of Let's Encrypt)
+	# EDIT: use the public sitemap URL, including its port if needed
+	handle /robots.txt {
+		header Content-Type "text/plain; charset=utf-8"
+		respond `User-agent: *
+Allow: /
+` 200
+	}
 
-    # Everything else from S3 snapshot bucket 
-    handle {
-        route {
-            s3proxy {
-                # Alternatively, configure a profile and mount its AWS credentials file.
-                # profile <aws-profile>
-                bucket <my-snapshot-bucket>
-                # change if you have a different one
-                region us-east-1
-                # StorageGRID tenant's S3 API hostname/IP that matches its TLS certificate and <PORT>
-                endpoint https://<my-tenant-s3-api-fqdn>:<port>
-                force_path_style
-                # index index.html    # optional
-                # browse              # disable directory listing for obscurity/security
-            }
-        }
-    }
+	# EDIT: serve the uniquely-named sitemap from disk
+	handle /ai-cloner-snap.xml {
+		root * /var/lib/sitemaps
+		file_server
+	}
+
+	# Everything else from S3 snapshot bucket 
+	handle {
+		route {
+			s3proxy {
+				# Alternatively, configure a profile and mount its AWS credentials file.
+				# profile <aws-profile>
+				# EDIT: provide your bucket name
+				bucket ai-cloner-snap
+				# change if you have a different one
+				region us-east-1
+				# EDIT: StorageGRID tenant's S3 API hostname/IP that matches its TLS certificate, and <PORT>
+				endpoint https://1.2.3.4:8443
+				force_path_style
+				# index index.html    # optional
+				# browse              # disable directory listing for obscurity/security
+			}
+		}
+	}
 }
 
-# other stuff you may have
-storagegrid.scaleoutsean.com {
-    reverse_proxy https://<public-firewall-dns-name>:10443 {
-        header_up Host {http.request.host}
-    }
+# EDIT: other SG buckets you may have. Remove if not required.
+storagegrid.example.com:10444 {
+	reverse_proxy https://1.2.3.4:8444 {
+		header_up Host {http.request.host}
+	}
 }

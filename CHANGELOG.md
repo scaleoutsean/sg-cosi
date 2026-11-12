@@ -1,5 +1,14 @@
 # Changelog
 
+## [sgii-0.1.3] - 2026-11-12
+- Changed: 3rd party updates (Go 1.27.4)
+
+## [0.6.3] - 2026-11-12
+- Changed: 3rd party updates (Go 1.27.4)
+
+## [sgii-0.1.2] - 2026-11-09
+- Changed: Fix query bug with 11-column tables
+
 ## [0.6.2] - 2026-10-31
 
 - Changed: 3rd party updates (3rd party dependencies including security updates)
